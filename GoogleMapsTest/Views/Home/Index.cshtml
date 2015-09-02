@@ -1,0 +1,121 @@
+﻿
+<style type="text/css">
+    #map {
+        height: 350px;
+        border-radius: 5px;
+    }
+</style>
+<br/>
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading"><h3>Journey Details</h3></div>
+        <div class="panel-body">
+            <div class="col-xs-12 col-sm-6">
+                
+                <div class="col-xs-12 form-group">
+                    <input type="text" id="start" onchange="calcRoute();" class="form-control" placeholder="Starting location">
+                </div>
+                <div id="via" class="col-xs-12 form-group">
+
+                </div>
+                <div class="col-xs-12 form-group">
+                    <input type="text" id="end" onchange="calcRoute();" class="form-control" placeholder="Ending location">
+                </div>
+                <div class="col-xs-12">
+                    <input type="button" id="add" onclick="addVia();" value="Add Via" />
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-6" id="map"></div>
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
+
+var directionsDisplay;
+var directionsService;
+var map;
+
+function initMap() {
+    directionsService = new google.maps.DirectionsService();
+    directionsDisplay = new google.maps.DirectionsRenderer;
+
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 7,
+        zoomControl: false,
+        disableDefaultUI: true,
+        draggable: false,
+        zoomControl: false,
+        scrollwheel: false,
+        disableDoubleClickZoom: true
+    });
+
+    directionsDisplay.setMap(map);
+
+    calcRoute();
+
+    //calculateAndDisplayRoute(directionsService, directionsDisplay);
+}
+
+function calcRoute() {
+    var start = $("#start").val();
+    var end = $("#end").val();
+
+    // Get all of the vias
+    var allVias = $(".via").map(function () {
+        return {
+            location: $(this).val(),
+            stopover: true
+        };
+    }).get();
+
+    var waypoints = [];
+
+    for (var i = 0; i < allVias.length; i++) {
+        waypoints.push({
+            location: allVias[i].location,
+            stopover: true
+        });
+    }
+
+    var request = {
+            origin: start,
+            destination: end,
+            waypoints: waypoints,
+            travelMode: google.maps.TravelMode.DRIVING
+    };
+
+    directionsService.route(request, function (result, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(result);
+        }
+    });
+}
+
+function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+    directionsService.route({
+        origin: "Beaumont, Moseley Road, Hallow, WORCESTER, WR2 6NJ, UNITED KINGDOM",
+        destination: "8 Checker Street, KING'S LYNN, PE30 4WG, UNITED KINGDOM",
+        waypoints: [
+            {
+                location: "26 Row Hill, West Winch, King's Lynn, PE33 0PE, UNITED KingDom",
+                stopover: true
+            }
+        ],
+        travelMode: google.maps.TravelMode.DRIVING
+    }, function (response, status) {
+        if (status === google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);
+        } else {
+            window.alert('Directions request failed due to ' + status);
+        }
+    });
+}
+
+function addVia() {
+    $('#via').append("<input placeholder='Enter a via' onchange='calcRoute();' class='form-control via'></input>")
+}
+
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?callback=initMap"></script>
